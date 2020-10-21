@@ -31,8 +31,8 @@ app.get('/repository/:id', async (req, res) => {
 app.get('/repository/:id/branch', async (req, res) => {
   const { id } = req.params
   try {
-    const repository = await db.collection('repositories').doc(id).get()
-    const branches = repository.data().branches
+    const snapshot = await db.collection('repositories').doc(id).collection('branches').get()
+    const branches = snapshotToArray(snapshot)
     return res.status(200).json(branches)
   } catch (error) {
     return res.status(500).json({ error })
