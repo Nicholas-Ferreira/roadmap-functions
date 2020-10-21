@@ -1,42 +1,11 @@
+const admin = require('firebase-admin')
 const functions = require('firebase-functions');
 const express = require('express')
 const app = express();
+const { snapshotToArray } = require('./utils/firebase.utils')
 
-const repositories = {
-  '1': {
-    id: 1,
-    name: "Fundamental",
-    photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Closed_Book_Icon.svg/1200px-Closed_Book_Icon.svg.png",
-    branches: [
-      { id: 1, name: "Git - Version Control" },
-      { id: 2, name: "Basic Terminal Usage" },
-      { id: 3, name: "Data Structures & Algorithms" },
-      { id: 4, name: "GitHub" },
-      { id: 5, name: "Licenses" },
-      { id: 6, name: "Semantic Versioning" },
-      { id: 7, name: "SSH" },
-      { id: 8, name: "HTTP/HTTPS and APIs" },
-      { id: 9, name: "Design Patterns" },
-      { id: 10, name: "Character Encodings" },
-    ]
-  },
-  '2': {
-    id: 2,
-    name: "Front-End",
-    photo: "https://icon-library.com/images/frontend-icon/frontend-icon-24.jpg"
-  },
-  '3': {
-    id: 3,
-    name: "Back-End",
-    photo: "https://hackernoon.com/hn-images/1*GkzKz-wfxLaShBREklifbg.png"
-  },
-  '4': {
-    id: 4,
-    name: "DevOps",
-    photo: "https://www.vhv.rs/dpng/d/215-2152054_transparent-model-icon-png-devops-icon-png-download.png"
-  }
-}
-
+admin.initializeApp(functions.config().firebase);
+const db = admin.firestore();
 
 // Create and Deploy Your First Cloud Functions
 // https://firebase.google.com/docs/functions/write-firebase-functions
@@ -46,15 +15,11 @@ app.get('/', (req, res) => {
   res.json({ bongs: 'BONG '.repeat(hours) });
 });
 
-app.get('/repository', (req, res) => {
-  const retorno = []
-  for (const rep in repositories) {
-    if (repositories.hasOwnProperty(rep)) {
-      const repository = repositories[rep];
-      retorno.push(repository)
-    }
-  }
-  return res.status(200).json(retorno)
+app.get('/repository', async (req, res) => {
+  const snapshot = await db.collection('repositories').get()
+  const repositories = snapshotToArray(snapshot)
+
+  return res.status(200).json(repositories)
 });
 
 app.get('/repository/:id', (req, res) => {
