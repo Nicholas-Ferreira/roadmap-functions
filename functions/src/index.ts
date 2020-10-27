@@ -10,6 +10,31 @@ const db = admin.firestore();
 app.get('/', (req, res) => {
   res.send('OK')
 });
+app.post('/login', async (req, res) => {
+  const { email, senha } = req.body
+  const snapshot = await db.collection('users')
+    .where('email', '==', email)
+    .where('senha', '==', senha)
+    .get()
+
+  const user = snapshotToArray(snapshot)[0]
+  return res.status(200).json(user)
+});
+
+app.get('/user', async (req, res) => {
+  const snapshot = await db.collection('users').get()
+  const users = snapshotToArray(snapshot)
+
+  return res.status(200).json(users)
+});
+
+app.post('/user', async (req, res) => {
+  const { name, email, senha } = req.body
+
+  await db.collection('users').add({ name, email, senha })
+
+  return res.status(200).json({ name, email, senha })
+});
 
 app.get('/repository', async (req, res) => {
   const snapshot = await db.collection('repositories').get()
